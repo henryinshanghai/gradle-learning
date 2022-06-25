@@ -1,21 +1,54 @@
+/*
+    Gradle在默认情况下已经为Project定义了很多Property:
+        project：Project本身
+        name：Project的名字
+        path：Project的绝对路径
+        description：Project的描述信息
+        buildDir：Project构建结果存放目录
+        version：Project的版本号
+ */
 version = 'this is the project version'
 description = 'this is the project description'
-task showProjectProperties << {
+task showProjectProperties {
     println version
-    println project.description
+    println project.description // Project和Task都拥有description属性，所以我们需要显式地指明project。
 }
 
+/*
+    在build.gradle文件中定义Property;
+    手段1：通过ext来定义 - 语法： ext.<property_name> = xxx
+ */
 ext.property1 = "this is property1"
 
+/*
+    手段2： 通过闭包的方式
+ */
 ext {
     property2 = "this is property2"
 }
 
-task showProperties << {
+// 使用自定义的property - 语法：<property_name>
+task showProperties {
     println property1
     println property2
 }
 
-task showCommandLieProperties << {
-    println property3
-}
+/*
+    这里的property3可以：
+    - 1 命令行参数传入
+        语法： -P参数定义命令行参数
+        命令： gradle -Pproperty3="this is property3" showCommandLieProperties
+    - 2 JVM系统参数传入
+        语法： -D参数定义JVM的系统参数
+        特征： 每一个通过-D方式声明的Property都需要以“org.gradle.project”为前缀
+        命令：gradle -Dorg.gradle.project.property3="this is another property3" showCommandLieProperties
+    - 3 由环境变量传入
+        语法：先在环境变量中添加需要的属性。
+        特征：在定义环境变量时，每一个Property都需要以“ORG_GRADLE_PROJECT_”为前缀
+        添加属性的命令： export ORG_GRADLE_PROJECT_property3="this is yet another property3"
+        然后直接执行 task： gradle showCommandLieProperties
+        Not Working... 😳
+ */
+//task showCommandLieProperties {
+//    println property3
+//}
