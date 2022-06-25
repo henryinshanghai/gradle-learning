@@ -1,24 +1,39 @@
-task showDescription1 << {
+/*
+    定义一个Task的同时, 设置description
+ */
+task showDescription1 {
     description = 'this is task showDescription'
     println description
 }
 
-task showDescription2 << {
+/*
+    定义
+ */
+task showDescription2 {
     println description
 }
+// 手段2：定义 Project 的一个 description属性
+/*
+    原理：
+        对于每一个Task，Gradle都会在Project中创建一个同名的Property - 所以我们可以将该Task当作Property来访问
+ */
 showDescription2.description = 'this is task showDescription'
 
 
-task showDescription3 << {
+task showDescription3 {
     println description
 }
+// 手段3：定义一个与task同名的方法
+/*
+    对于每一个Task，Gradle都会在Project中Gradle还会创建一个同名的方法 - 可以使用这个方法来配置task
+    特征：方法接受一个闭包
+ */
 showDescription3 {
     description = 'this is task showDescription'
 }
 
 
-
-task copyFile1(type: Copy) << {
+task copyFile1(type: Copy) {
     from 'source'
     into 'destination'
 }
@@ -34,3 +49,24 @@ copyFile3 {
     from 'source'
     into 'destination'
 }
+/*
+Gradle是一种声明式的构建工具。
+特征：
+    1 在执行时，Gradle并不会一开始便顺序执行build.gradle文件中的内容，而是分为两个阶段；
+    2 第一个阶段是配置阶段，然后才是实际的执行阶段。
+        在配置阶段，Gradle将读取所有build.gradle文件的所有内容 来
+            配置Project和Task等 - 比如设置Project和Task的Property，处理Task之间的依赖关系等
+
+Gradle是 Groovy语言的内部DSL。
+
+- Groovy中的Bean概念；
+    特征: 我们可以通过像访问字段本身一样调用getter和setter
+    原理： Groovy为每一个字段都会自动生成getter和setter
+- Groovy闭包的delegate机制；
+    作用： 将一个 闭包中的执行代码 的作用对象 设置成任意其他对象。
+
+闭包，是一个代码块，或可以理解成一个匿名函数; - 差不多就是匿名函数吧
+    1 在外部方法调用时，可以 将其作为方法的实参 传递给方法的形参;
+    2 并在方法内部 回调此匿名函数，且 回调此匿名函数时 可以 传递实参给到匿名函数的内部去接收，并 执行此匿名函数。
+    3 同时，此代码块或匿名函数 也可以赋值给一个变量，使其具有 自执行的能力，且最后一行的执行语句 作为匿名函数的返回。
+ */
