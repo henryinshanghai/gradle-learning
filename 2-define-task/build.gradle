@@ -1,42 +1,108 @@
-task hello1 << {
-println 'hello1'
-println delegate.class.name
+/*
+    手段：调用Project的task()方法创建Task;
+    具体语法： Gradle的 task关键字
+ */
+task hello1 {
+    println 'hello1'
+    println delegate.class.name
 }
 
 
 task hello2 {
-doLast {
-println 'hello2'}
+    doLast {
+        println 'hello2'
+    }
 }
-
 
 task hello3 {
-doLast {
-println 'hello3'}
+    doFirst {
+        println 'hello3'
+    }
 }
+/* Gradle DSL 所提供的创建 task的手段 👆 task关键子的本质是 调用了 Project类型的task()方法 */
 
+/*
+    自定义的3个Task都位于TaskContainer中———— Project中的tasks属性 即表示该TaskContainer
+    特征： Project 的tasks属性可以直接拿来用
+ */
 task showTasks {
-println tasks.class
-println tasks.size()
+    println tasks.class // class org.gradle.api.internal.tasks.DefaultTaskContainer_Decorated
+    println tasks.size() // 19 19是根据什么得到的？
 }
 
-task hello7 << {
-description = "this is hello7"
-println description
+
+/*
+    手段2：通过TaskContainer的create()方法创建Task
+    原理：
+        1 通过task()方法创建的Task都被存放在了TaskContainer中；
+        2 Project 又维护了一个 TaskContainer类型的属性tasks -> 可以直接向TaskContainer里面添加Task
+ */
+tasks.create(name: 'hello4') {
+    println 'hello4'
 }
 
-task hello8 << {
-println description
+/*
+    在定义一个Task的同时 声明它的依赖项
+    语法1： dependsOn: <dependency_task>
+ */
+task hello5(dependsOn: hello4) {
+    println 'hello5'
 }
 
+
+/*
+    先定义完成 Task，再去声明依赖项
+ */
+task hello6 { // 定义 Task
+    println 'hello6'
+}
+
+hello6.dependsOn hello5 // 声明依赖项
+
+/*
+    配置 task中可用的 property;
+    手段1： 在定义/声明 task的时候，配置 property
+ */
+task hello7 {
+    // Gradle为每个Task默认定义的Property，比如description，logger
+    description = "this is hello7"
+    println description
+}
+
+/*
+    配置 task中可用的 property;
+    手段2： 使用闭包的方式 来 初始化property
+ */
+// 定义 task
+task hello8 {
+    println description
+}
+
+// 手段2：使用闭包的方式 来 配置task的description属性
+/*
+    为什么可以先定义 task，再初始化 property?
+    原理：Gradle在执行Task时分为两个阶段，首先是配置阶段，然后才是实际执行阶段
+    结果：hello8 其实 并没有被执行
+ */
 hello8 {
-description = "this is hello8"
+    description = "this is hello8"
 }
 
-task hello9 << {
-println description
+task hello9 {
+    println description
 }
 
+// 手段3：调用Task的configure()方法完成Property的设置
 hello9.configure {
-description = "this is hello9"
+    description = "this is hello9"
 }
+
+/*
+知识卡：
+
+Gradle的Project 从本质上说只是含有多个Task的容器，
+一个Task 与Ant的Target相似，表示一个逻辑上的执行单元。
+
+我们可以通过很多种方式定义Task，所有的Task 都存放在Project的TaskContainer中。
+
+ */
