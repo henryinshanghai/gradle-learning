@@ -1,32 +1,58 @@
-task combineFileContentNonIncremental  {
-def sources = fileTree('sourceDir')
+/*
+    定义task；
+    作用：从sourceDir目录中 读取所有的文件，然后 将每个文件的内容合并到destination.txt文件中
+ */
+task combineFileContentNonIncremental {
+    def sources = fileTree('sourceDir')
+    def destination = file('destination.txt')
 
-def destination = file('destination.txt')
+    doLast {
+        destination.withPrintWriter { writer ->
+            sources.each { source ->
+                writer.println source.text
+            }
+        }
+    }
+}
+/*
+    特征👆：
+        多次执行“gradle combineFileContentNonIncremental”时，整个Task都会反复执行，
+            即便在第一次执行后我们已经得到了所需的结果
+ */
 
-doLast {
-destination.withPrintWriter { writer ->
-sources.each {source ->
-writer.println source.text
-}
-}
-}
-}
+// 命令： gradle combineFileContentIncremental
+task combineFileContentIncremental {
+    def sources = fileTree('sourceDir')
+    def destination = file('destination.txt')
 
-task combineFileContentIncremental  {
-def sources = fileTree('sourceDir')
-def destination = file('destination.txt')
+    // 将sources声明为该Task的inputs，而将destination声明为outputs
+    inputs.dir sources
+    outputs.file destination
 
-
-inputs.dir sources
-
-outputs.file destination
-
-doLast {
-destination.withPrintWriter { writer ->
-sources.each {source ->
-writer.println source.text
+    doLast {
+        destination.withPrintWriter { writer ->
+            sources.each { source ->
+                writer.println source.text
+            }
+        }
+    }
 }
-}
-}
-}
+/*
+    特征：命令行输出 - 1 actionable task: 1 up-to-date。Task不会重复执行
+ */
 
+/*
+在增量式构建中，我们为每个Task定义输入（inputs）和输入（outputs）;
+    如果在执行一个Task时，如果它的输入和输出与前一次执行时没有发生变化，那么:
+        Gradle便会认为该Task是最新的（UP-TO-DATE），因此Gradle将不予执行.
+
+    特征：
+        1 Task的inputs和outputs可以是
+            一个或多个文件；
+            可以是文件夹；
+            还可以是Project的某个Property；
+            甚至可以是某个闭包所定义的条件
+        2 每个Task都拥有inputs和outputs属性，他们的类型分别为TaskInputs和TaskOutputs；
+
+    应用： 在实际应用中，你将遇到很多这样的情况，因为Gradle的很多插件都引入了增量式构建机制
+ */
